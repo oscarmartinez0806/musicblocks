@@ -615,6 +615,26 @@ describe("ASTUtils", () => {
                 arguments: ASTUtils._getArgsAST(args)
             });
         });
+
+        it("should emit action argument references in repeat and method expressions", () => {
+            JSInterface.isMethod.mockReturnValue(true);
+            JSInterface.isGetter.mockReturnValue(false);
+            JSInterface.isSetter.mockReturnValue(false);
+            JSInterface.methodReturns.mockReturnValue(false);
+            JSInterface.getMethodName.mockImplementation(name =>
+                name === "right" ? "turnRight" : name
+            );
+
+            const tree = [
+                ["repeat", [["arg", [1]]], [["right", [["divide", [360, ["arg", [1]]]]], null]]]
+            ];
+            const code = astring.generate(ASTUtils.getMethodAST("drawPolygon", tree));
+
+            expect(code).toContain("MathUtility.doRepeatCount(actionArgs[1])");
+            expect(code).toContain("await mouse.turnRight(360 / actionArgs[1]);");
+            expect(code).not.toContain("doRepeatCount(null)");
+            expect(code).not.toContain("turnRight(360 / null)");
+        });
     });
 
     describe("_getArgsAST", () => {

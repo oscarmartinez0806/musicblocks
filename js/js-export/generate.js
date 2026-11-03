@@ -131,6 +131,8 @@ class JSGenerate {
                     if (arg.protoblock.style === "value") {
                         if (JSInterface.isGetter(arg.name)) {
                             args.push([arg.name, null]);
+                        } else if (arg.name === "namedarg") {
+                            args.push(["arg", [Number(arg.privateData)]]);
                         } else if (
                             window.BooleanBlock &&
                             arg.protoblock instanceof window.BooleanBlock

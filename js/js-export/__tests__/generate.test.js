@@ -319,6 +319,59 @@ describe("JSGenerate Class", () => {
         expect(JSGenerate.actionTrees.length).toBe(1);
     });
 
+    test("should preserve inline arg indices when generating stack trees", () => {
+        globalActivity.blocks.stackList = [1];
+        globalActivity.blocks.blockList = {
+            1: {
+                name: "start",
+                trash: false,
+                connections: [null, 2, null],
+                protoblock: { style: "hat" }
+            },
+            2: {
+                name: "repeat",
+                connections: [1, 3, 4, null],
+                protoblock: { style: "clamp", args: 2 }
+            },
+            3: {
+                name: "namedarg",
+                value: null,
+                privateData: "1",
+                connections: [2],
+                protoblock: { style: "value", args: 0 }
+            },
+            4: {
+                name: "right",
+                connections: [2, 5, null],
+                protoblock: { style: "command", args: 1 }
+            },
+            5: {
+                name: "divide",
+                connections: [4, 6, 7],
+                protoblock: { style: "arg", args: 2 }
+            },
+            6: {
+                name: "number",
+                value: 360,
+                connections: [5],
+                protoblock: { style: "value", args: 0 }
+            },
+            7: {
+                name: "namedarg",
+                value: null,
+                privateData: "1",
+                connections: [5],
+                protoblock: { style: "value", args: 0 }
+            }
+        };
+
+        JSGenerate.generateStacksTree();
+
+        expect(JSGenerate.startTrees[0]).toEqual([
+            ["repeat", [["arg", [1]]], [["right", [["divide", [360, ["arg", [1]]]]], null]]]
+        ]);
+    });
+
     test("should print tree with nested args including null and object", () => {
         JSGenerate.startTrees = [[["forward", [100, null, ["add", [3, 4]]], null]]];
         JSGenerate.actionTrees = [];
